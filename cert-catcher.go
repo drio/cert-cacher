@@ -155,7 +155,7 @@ func createHandler(ng NodeGetter, store Store) http.HandlerFunc {
 			diff := cert.NotAfter.Sub(now)
 			days := int(diff.Hours() / 24)
 
-			fmt.Fprintf(w, "%d\n", days)
+			fmt.Fprintf(w, "%d", days)
 			return
 		}
 
@@ -172,8 +172,7 @@ func createHandler(ng NodeGetter, store Store) http.HandlerFunc {
 				fmt.Fprintf(w, "%s", contents)
 				return
 			}
-			fmt.Fprintf(w, "no %s for %s", path, nn)
-			http.NotFound(w, r)
+			http.Error(w, fmt.Sprintf("no %s for %s", path, nn), http.StatusNotFound)
 			return
 
 		} else if r.Method == http.MethodPost {

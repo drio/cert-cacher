@@ -2,3 +2,4 @@ node_modules
 *.vim
 .env*
 m3*
+c.out

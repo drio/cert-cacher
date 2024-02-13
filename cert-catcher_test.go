@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 )
 
@@ -19,24 +17,26 @@ func (fn *FakeNodeGetter) GetNode(r *http.Request) (string, error) {
 
 var server *httptest.Server
 
-func TestMain(m *testing.M) {
-	fmt.Println("Set up stuff for tests here")
-
+func createServer(storeType string) *httptest.Server {
 	var store Store
 	store = MemStore{}
+	if storeType == "disk" {
+		store = DiskStore{}
+	}
+	store.Init()
 
 	var ng NodeGetter
-	ng = &FakeNodeGetter{}
+	ng = &FakeNodeGetter{NodeName: "foobar"}
 
 	handler := createHandler(ng, store)
 	server = httptest.NewServer(handler)
-	defer server.Close()
-
-	exitVal := m.Run()
-	os.Exit(exitVal)
+	return server
 }
 
-func Test_Ping(t *testing.T) {
+func TestPing(t *testing.T) {
+	server = createServer("mem")
+	defer server.Close()
+
 	resp, err := http.Get(server.URL + "/ping")
 	if err != nil {
 		t.Fatal(err)
@@ -56,10 +56,12 @@ func Test_Ping(t *testing.T) {
 	if string(body) != expected {
 		t.Errorf("Expected response body to be %s, got %s", expected, body)
 	}
-
 }
 
-func Test_Sh(t *testing.T) {
+func TestSh(t *testing.T) {
+	server = createServer("mem")
+	defer server.Close()
+
 	resp, err := http.Get(server.URL + "/sh")
 	if err != nil {
 		t.Fatal(err)
@@ -79,5 +81,103 @@ func Test_Sh(t *testing.T) {
 	expected := "application/x-sh"
 	if headerVal != expected {
 		t.Errorf("incorrect header expected: %s got: %s", expected, headerVal)
+	}
+}
+
+func TestGetInvalidPath(t *testing.T) {
+	server = createServer("mem")
+	defer server.Close()
+
+	resp, err := http.Get(server.URL + "/foo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+}
+
+func TestGetWhenEmpty(t *testing.T) {
+	server = createServer("mem")
+	defer server.Close()
+
+	resp, err := http.Get(server.URL + "/cert")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	resp, err = http.Get(server.URL + "/key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+}
+
+func TestAddCertAndRead(t *testing.T) {
+	generateCertFiles("foobar")
+	server = createServer("disk")
+	defer func() {
+		server.Close()
+		rmCerts("foobar")
+	}()
+
+	resp, err := http.Get(server.URL + "/cert")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("1 Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	resp, err = http.Get(server.URL + "/key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("2 Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+}
+
+func TestDays(t *testing.T) {
+	generateCertFiles("foobar")
+	server = createServer("disk")
+	defer func() {
+		server.Close()
+		rmCerts("foobar")
+	}()
+
+	resp, err := http.Get(server.URL + "/days")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	expected := "364"
+	if string(body) != expected {
+		t.Errorf("Expected response body to be [%s], got [%s]", expected, body)
 	}
 }

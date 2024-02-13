@@ -47,7 +47,7 @@ $ curl -s http://cert-cacher:9191/sh |  sh -s -- -p -d m3.XXX.ts.net
 LOG> -p enabled, printing cmds only
 LOG> /days status=404 days_to_expire=404 page not found
 LOG> Cert not available in cacher. Requesting one and sending it to the cacher
-tailscale cert m3.drake-alkaline.ts.net
+tailscale cert m3.XXX.ts.net
 curl --data-binary @./m3.XXX.ts.net.cert http://cert-cacher:9191
 curl --data-binary @./m3.XXX.ts.net.key http://cert-cacher:9191
 ```

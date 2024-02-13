@@ -22,7 +22,7 @@ git tag "v$new_version"
 git push origin
 git push origin v$new_version
 
-make clean build-all
+make clean build
 
 gh release create v$new_version --notes "v$new_version" ./cert-catcher.*
 

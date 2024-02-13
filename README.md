@@ -5,7 +5,7 @@ may run into [rate limits](https://github.com/tailscale/tailscale/issues/10395#i
 when requesting the certificates. 
 
 <p align="center">
-  <img align="center" src="magic.webp" width="600px" alt="The cert cacher magician"/>
+  <img align="center" src="magic.webp" width="400px" alt="The cert cacher magician"/>
 </p>
 
 Cert-cacher is a simple [tsnet](https://tailscale.com/kb/1244/tsnet) cert caching service that leverages the

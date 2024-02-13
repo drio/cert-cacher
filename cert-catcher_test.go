@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -124,7 +127,7 @@ func TestGetWhenEmpty(t *testing.T) {
 	}
 }
 
-func TestAddCertAndRead(t *testing.T) {
+func TestAddCertAndReadWithDiskStore(t *testing.T) {
 	generateCertFiles("foobar")
 	server = createServer("disk")
 	defer func() {
@@ -179,5 +182,67 @@ func TestDays(t *testing.T) {
 	expected := "364"
 	if string(body) != expected {
 		t.Errorf("Expected response body to be [%s], got [%s]", expected, body)
+	}
+}
+
+func TestAddCertAndReadWithMemStore(t *testing.T) {
+	runTestAddCertAndReadWithMemStore(t, "cert")
+	runTestAddCertAndReadWithMemStore(t, "key")
+}
+
+func runTestAddCertAndReadWithMemStore(t *testing.T, ext string) {
+	generateCertFiles("foobar")
+	server = createServer("mem")
+	defer func() {
+		server.Close()
+		rmCerts("foobar")
+	}()
+
+	file, err := os.Open(fmt.Sprintf("foobar.%s", ext))
+	if err != nil {
+		t.Fatalf("Failed to open file: %v", err)
+	}
+	defer file.Close()
+
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, file)
+	if err != nil {
+		panic(err)
+	}
+
+	reader := bytes.NewReader(buf.Bytes())
+	url := server.URL + fmt.Sprintf("/%s", ext)
+	resp, err := http.Post(url, "application/x-www-form-urlencoded", reader)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	resp, err = http.Get(url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected status code %d, got %d", http.StatusOK, resp.StatusCode)
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fileReader := bytes.NewReader(buf.Bytes())
+	fileBytes, err := io.ReadAll(fileReader)
+	if err != nil {
+		t.Errorf("error reading from file buffer %v", err)
+	}
+	if !bytes.Equal(bodyBytes, fileBytes) {
+		t.Errorf("the data I got back from the server does not match what I sent")
 	}
 }

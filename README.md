@@ -1,12 +1,12 @@
 # cert-cacher
 
-If you create machines on the fly to run your integration tests and your services run over TLS, you
-may run into [rate limits](https://github.com/tailscale/tailscale/issues/10395#issuecomment-1934383393) 
-when requesting certificates. 
-
 <p align="center">
   <img align="center" src="magic.webp" width="400px" alt="The cert cacher magician"/>
 </p>
+
+If you create machines on the fly to run your integration tests and your services run over TLS, you
+may run into [rate limits](https://github.com/tailscale/tailscale/issues/10395#issuecomment-1934383393) 
+when requesting certificates. 
 
 Cert-cacher is a simple [tsnet](https://tailscale.com/kb/1244/tsnet) cert caching service that leverages the
 built-in identity of [tailnet](https://tailscale.com/glossary/tailnet).

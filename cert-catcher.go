@@ -89,6 +89,7 @@ func main() {
 	log.Fatal(http.Serve(ln, nil))
 }
 
+// A thing that gives me the name of the node that is making the request
 type NodeGetter interface {
 	GetNode(r *http.Request) (string, error)
 }

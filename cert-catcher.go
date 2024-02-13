@@ -142,9 +142,10 @@ func main() {
 			}
 			fmt.Fprintf(w, "no %s for %s", path, nn)
 			http.NotFound(w, r)
+			return
 
-			// Store the cert or the key based ont he first line of the file the user is sending
 		} else if r.Method == http.MethodPost {
+			// Store the cert or the key based on the first line of the file the user is sending
 			body, err := io.ReadAll(r.Body)
 			defer r.Body.Close()
 			if err != nil {

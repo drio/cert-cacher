@@ -13,21 +13,35 @@ built-in identity of [tailnet](https://tailscale.com/glossary/tailnet).
 
 ### Usage
 
-```sh
-$ go install github.com/drio/cert-catcher@latest
-# Run the service
-$ cert-catcher 
+```
+#$ go install github.com/drio/cert-catcher@latest
+$ git clone github.com/drio/cert-catcher
+$ cd cert-catcher
+$ go build .
+# This will store the certs in memory (use -disk to store in disk)
+$ ./cert-catcher
 ```
 
-Now you can make requests to...
+Now you can make requests from any node in the tailnet. Remember to update your [ACL](https://tailscale.com/kb/1018/acls))
+to give proper permissions to the machines you want to hace access to the cert-catcher.
 
-```sh
+```
+# Save your certs (the service will look at the file header to determine what you are sending):
+$ curl  --data-binary @./machine.tailnet-name.ts.net.cert http://cert-cacher:9191/
+$ curl  --data-binary @./machine.tailnet-name.ts.net.key http://cert-cacher:9191/
+
 # Get the private key/cert for the cert associated with the machine that makes the request
 $ curl http://cert-cacher:9191/key
 $ curl http://cert-cacher:9191/cert
 
 # Check how many days before the cert expires:
 $ curl http://cert-cacher:9191/cert
+```
 
-#  
+All these requires you to issue the certs. 
+You will probably use [`tailscale cert`](https://tailscale.com/kb/1153/enabling-https) for that.
+The service comes with a shell script that can help you with that:
+
+```
+$ curl -s http://cert-cacher:9191/sh | sh -s -- -d m3.tailnet.net
 ```

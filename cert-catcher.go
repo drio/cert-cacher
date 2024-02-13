@@ -90,6 +90,11 @@ func main() {
 		defer mu.Unlock()
 		nn := who.Node.Name
 
+		if r.URL.Path == "/ping" && r.Method == http.MethodGet {
+			fmt.Fprintf(w, "pong")
+			return
+		}
+
 		// serve the script that encapsulates the requests to this service
 		if r.URL.Path == "/sh" && r.Method == http.MethodGet {
 			filePath := "./get-cacher.sh"

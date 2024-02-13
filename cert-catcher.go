@@ -45,6 +45,7 @@ import (
 	"sync"
 	"time"
 
+	"tailscale.com/client/tailscale"
 	"tailscale.com/tsnet"
 )
 
@@ -57,9 +58,22 @@ var (
 
 func main() {
 	flag.Parse()
+
 	s := new(tsnet.Server)
 	s.Hostname = *hostname
 	defer s.Close()
+
+	ln, err := s.Listen("tcp", *addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ln.Close()
+
+	// Get client to communicate to the local tailscaled
+	lc, err := s.LocalClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var store Store
 	if *saveToDisk == true {
@@ -69,18 +83,13 @@ func main() {
 	}
 	store.Init()
 
-	ln, err := s.Listen("tcp", *addr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer ln.Close()
+	http.HandleFunc("/", createHandler(lc, store))
 
-	lc, err := s.LocalClient()
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Fatal(http.Serve(ln, nil))
+}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+func createHandler(lc *tailscale.LocalClient, store Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		who, err := lc.WhoIs(r.Context(), r.RemoteAddr)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
@@ -169,9 +178,7 @@ func main() {
 			// Optionally handle other methods or return an error
 			http.Error(w, "Method not supported", http.StatusMethodNotAllowed)
 		}
-	})
-
-	log.Fatal(http.Serve(ln, nil))
+	}
 }
 
 type Store interface {

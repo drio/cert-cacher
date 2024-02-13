@@ -34,6 +34,7 @@ package main
 
 import (
 	"crypto/x509"
+	"embed"
 	"encoding/pem"
 	"flag"
 	"fmt"
@@ -48,6 +49,9 @@ import (
 	"tailscale.com/client/tailscale"
 	"tailscale.com/tsnet"
 )
+
+//go:embed get-cacher.sh
+var scriptFile embed.FS
 
 var (
 	addr       = flag.String("addr", ":9191", "address to listen on")
@@ -107,6 +111,11 @@ func (rn *RealNodeGetter) GetNode(r *http.Request) (string, error) {
 }
 
 func createHandler(ng NodeGetter, store Store) http.HandlerFunc {
+	scriptData, err := scriptFile.ReadFile("get-cacher.sh")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
@@ -124,9 +133,8 @@ func createHandler(ng NodeGetter, store Store) http.HandlerFunc {
 
 		// serve the script that encapsulates the requests to this service
 		if r.URL.Path == "/sh" && r.Method == http.MethodGet {
-			filePath := "./get-cacher.sh"
 			w.Header().Set("Content-Type", "application/x-sh")
-			http.ServeFile(w, r, filePath)
+			fmt.Fprintf(w, "%s", scriptData)
 			return
 		}
 

@@ -15,4 +15,9 @@ $(BINS):
 	go build -o $@
 
 clean:
-	rm -f c.out $(BINS)
+	rm -f c.out $(BINS) cert-cacher
+
+.PHONY: module
+module:
+	go mod init github.com/drio/cert-cacher
+	go mod tidy	

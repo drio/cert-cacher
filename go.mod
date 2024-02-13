@@ -1,4 +1,4 @@
-module github.com/drio/cert-catcher
+module github.com/drio/cert-cacher
 
 go 1.21.7
 

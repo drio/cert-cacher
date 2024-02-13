@@ -69,12 +69,6 @@ func main() {
 	}
 	defer ln.Close()
 
-	// Get client to communicate to the local tailscaled
-	lc, err := s.LocalClient()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var store Store
 	if *saveToDisk == true {
 		store = DiskStore{}
@@ -83,21 +77,44 @@ func main() {
 	}
 	store.Init()
 
-	http.HandleFunc("/", createHandler(lc, store))
+	// Get client to communicate to the local tailscaled
+	lc, err := s.LocalClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var ng NodeGetter
+	ng = &RealNodeGetter{lc}
+	http.HandleFunc("/", createHandler(ng, store))
 
 	log.Fatal(http.Serve(ln, nil))
 }
 
-func createHandler(lc *tailscale.LocalClient, store Store) http.HandlerFunc {
+type NodeGetter interface {
+	GetNode(r *http.Request) (string, error)
+}
+
+type RealNodeGetter struct {
+	lc *tailscale.LocalClient
+}
+
+func (rn *RealNodeGetter) GetNode(r *http.Request) (string, error) {
+	who, err := rn.lc.WhoIs(r.Context(), r.RemoteAddr)
+	if err != nil {
+		return "", err
+	}
+	return string(who.Node.Name), nil
+}
+
+func createHandler(ng NodeGetter, store Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		who, err := lc.WhoIs(r.Context(), r.RemoteAddr)
+		mu.Lock()
+		defer mu.Unlock()
+
+		nn, err := ng.GetNode(r)
 		if err != nil {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		mu.Lock()
-		defer mu.Unlock()
-		nn := who.Node.Name
 
 		if r.URL.Path == "/ping" && r.Method == http.MethodGet {
 			fmt.Fprintf(w, "pong")

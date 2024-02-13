@@ -40,8 +40,26 @@ $ curl http://cert-cacher:9191/cert
 
 All these requires you to issue the certs. 
 You will probably use [`tailscale cert`](https://tailscale.com/kb/1153/enabling-https) for that.
-The service comes with a shell script that can help you with that:
+The service comes with a shell script that can help you with that.
 
 ```
-$ curl -s http://cert-cacher:9191/sh | sh -s -- -d m3.tailnet.net
+# Execute the script but only print the cmds you'd run (-p)
+$ curl -s http://cert-cacher:9191/sh |  sh -s -- -p -d m3.XXX.ts.net
+LOG> -p enabled, printing cmds only
+LOG> /days status=404 days_to_expire=404 page not found
+LOG> Cert not available in cacher. Requesting one and sending it to the cacher
+tailscale cert m3.drake-alkaline.ts.net
+curl --data-binary @./m3.XXX.ts.net.cert http://cert-cacher:9191
+curl --data-binary @./m3.XXX.ts.net.key http://cert-cacher:9191
+```
+
+If the cert was cached:
+
+```
+curl -s http://cert-cacher:9191/sh |  sh -s -- -p -d m3.XXX.ts.net
+LOG> -p enabled, printing cmds only
+LOG> /days status=200 days_to_expire=359
+LOG> Cert cached and valid. Getting it from the catcher
+curl http://cert-cacher:9191/cert >m3.XXX.ts.net.cert
+curl http://cert-cacher:9191/key >m3.XXX.ts.net.key
 ```

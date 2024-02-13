@@ -55,7 +55,7 @@ curl --data-binary @./m3.XXX.ts.net.key http://cert-cacher:9191
 If the cert was cached:
 
 ```
-curl -s http://cert-cacher:9191/sh |  sh -s -- -p -d m3.XXX.ts.net
+$ curl -s http://cert-cacher:9191/sh |  sh -s -- -p -d m3.XXX.ts.net
 LOG> -p enabled, printing cmds only
 LOG> /days status=200 days_to_expire=359
 LOG> Cert cached and valid. Getting it from the cacher

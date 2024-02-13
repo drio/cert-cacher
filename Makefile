@@ -1,3 +1,5 @@
+BINS=cert-cacher.arm64.osx cert-cacher.amd64.linux cert-cacher.amd64.windows
+
 test:
 	go test -v *.go
 
@@ -8,5 +10,9 @@ coverage/html:
 	go test -v -cover -coverprofile=c.out
 	go tool cover -html=c.out
 
+build: $(BINS)
+$(BINS):
+	go build -o $@
+
 clean:
-	rm -f c.out
+	rm -f c.out $(BINS)

@@ -3,3 +3,6 @@ node_modules
 .env*
 m3*
 c.out
+cert-cacher.arm64.osx
+cert-cacher.amd64.linux
+cert-cacher.amd64.windows

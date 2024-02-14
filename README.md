@@ -36,9 +36,9 @@ $ curl http://cert-cacher:9191/cert
 $ curl http://cert-cacher:9191/cert
 ```
 
-All these requires you to issue the certs. 
+All these require you to issue the certs. 
 You will probably use [`tailscale cert`](https://tailscale.com/kb/1153/enabling-https) for that.
-The service comes with a shell script that can help you with that.
+To help with that cert-cacher comes with a shell script:
 
 ```
 # Execute the script but only print the cmds you'd run (-p)

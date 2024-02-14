@@ -7,3 +7,6 @@ cert-cacher.arm64.osx
 cert-cacher.amd64.linux
 cert-cacher.amd64.windows
 cert-cacher
+cert-cacher.linux*
+cert-cacher.windows*
+cert-cacher.darwin*

@@ -20,8 +20,8 @@ $ go build .
 $ ./cert-cacher
 ```
 
-Now you can make requests from any node in the tailnet. Remember to update your [ACL](https://tailscale.com/kb/1018/acls))
-to give proper permissions to the machines you want to hace access to the cert-cacher.
+Now you can make requests from any node in the tailnet. Remember to update your ([ACL](https://tailscale.com/kb/1018/acls))
+to give proper permissions to the machines you want to have access to the cert-cacher.
 
 ```
 # Save your certs (the service will look at the file header to determine what you are sending):

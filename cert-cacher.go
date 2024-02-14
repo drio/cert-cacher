@@ -318,7 +318,9 @@ func processBody(body string) (string, string) {
 	lines := strings.Split(string(body), "\n")
 	if lines[0] == "-----BEGIN CERTIFICATE-----" {
 		return body, "cert"
-	} else if lines[0] == "-----BEGIN PRIVATE KEY-----" || lines[0] == "-----BEGIN RSA PRIVATE KEY-----" {
+	} else if lines[0] == "-----BEGIN PRIVATE KEY-----" ||
+		lines[0] == "-----BEGIN RSA PRIVATE KEY-----" ||
+		lines[0] == "-----BEGIN EC PRIVATE KEY-----" {
 		return body, "key"
 	} else {
 		return "", ""

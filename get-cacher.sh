@@ -18,6 +18,7 @@ tsCert() {
 }
 
 saveCerts() {
+	echo "NOTE: adjust file paths as necessary"
 	rop "curl --data-binary @./"$DOMAIN".cert $BASE_CACHER_URL"
 	rop "curl --data-binary @./"$DOMAIN".key $BASE_CACHER_URL"
 }

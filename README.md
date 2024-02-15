@@ -33,12 +33,12 @@ $ curl http://cert-cacher:9191/key
 $ curl http://cert-cacher:9191/cert
 
 # Check how many days before the cert expires:
-$ curl http://cert-cacher:9191/cert
+$ curl http://cert-cacher:9191/days
 ```
 
-all these require you to issue the certs. 
-you will probably use [`tailscale cert`](https://tailscale.com/kb/1153/enabling-https) for that.
-to help with that, cert-cacher embeds a shell script that you can execute like so:
+All these require you to issue the certs. 
+you will probably use [`tailscale cert`](https://tailscale.com/kb/1153/enabling-https).
+To help with that, cert-cacher embeds a shell script that you can execute like so:
 
 ```
 # Execute the script but only print the cmds you'd run (-p)
